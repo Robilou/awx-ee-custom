@@ -1,0 +1,15 @@
+---
+version: 3
+
+images:
+  base_image:
+    name: quay.io/ansible/awx-ee:24.6.1
+
+dependencies:
+  python:
+    - ovh==1.2.0
+
+  galaxy:
+    collections:
+      - name: kube_cloud.ovh
+        version: 1.7.6
