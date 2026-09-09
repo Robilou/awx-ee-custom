@@ -8,6 +8,7 @@ on:
       - '.github/workflows/build-ee.yml'
   push:
     branches: [develop, main]
+    tags: ['v*.*.*']
     paths:
       - 'execution-environment/**'
       - '.github/workflows/build-ee.yml'
@@ -81,6 +82,8 @@ jobs:
 
           if [ -n "${{ github.event.inputs.tag }}" ]; then
             TAGS+=("${{ github.event.inputs.tag }}")
+          elif [[ "${{ github.ref }}" == refs/tags/* ]]; then
+            TAGS+=("${GITHUB_REF#refs/tags/}")
           elif [ "${{ github.ref }}" = "refs/heads/develop" ]; then
             TAGS+=("dev" "dev-${SHORT_SHA}")
           elif [ "${{ github.ref }}" = "refs/heads/main" ]; then
