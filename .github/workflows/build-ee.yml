@@ -5,10 +5,12 @@ on:
     branches: [main, develop]
     paths:
       - 'execution-environment/**'
+      - '.github/workflows/build-ee.yml'
   push:
     branches: [develop, main]
     paths:
       - 'execution-environment/**'
+      - '.github/workflows/build-ee.yml'
   workflow_dispatch:
     inputs:
       tag:
@@ -46,6 +48,7 @@ jobs:
         uses: docker/build-push-action@v6
         with:
           context: build-context
+          file: build-context/Containerfile
           push: false
 
   # Runs on push to develop/main (i.e. after merge) and on manual dispatch.
@@ -107,5 +110,6 @@ jobs:
         uses: docker/build-push-action@v6
         with:
           context: build-context
+          file: build-context/Containerfile
           push: true
           tags: ${{ steps.tags.outputs.tags }}
