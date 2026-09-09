@@ -5,10 +5,12 @@ on:
     branches: [main, develop]
     paths:
       - 'execution-environment/**'
+      - '.github/workflows/build-ee.yml'
   push:
     branches: [develop, main]
     paths:
       - 'execution-environment/**'
+      - '.github/workflows/build-ee.yml'
   workflow_dispatch:
     inputs:
       tag:
