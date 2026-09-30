@@ -1,15 +1,77 @@
 ---
+# Custom AWX Execution Environment for the APITEA/ansible repository.
+#
+# Goal: runtime parity with the local developer toolchain
+# (ansible repo: requirements.txt -> ansible-core 2.21.0 on Python 3.12),
+# and all collections baked into the image so AWX does not need to
+# download them from Galaxy on every project update.
+#
+# IMPORTANT: keep "galaxy.collections" in sync with
+# ansible repo: collections/requirements.yml
 version: 3
 
 images:
   base_image:
-    name: quay.io/ansible/awx-ee:24.6.1
+    # CentOS Stream 10 ships Python 3.12 (same minor version as local .venv)
+    name: quay.io/centos/centos:stream10
+
+options:
+  package_manager_path: /usr/bin/dnf
 
 dependencies:
+  python_interpreter:
+    package_system: python3
+    python_path: /usr/bin/python3
+
+  ansible_core:
+    package_pip: ansible-core==2.21.0
+
+  ansible_runner:
+    package_pip: ansible-runner==2.4.1
+
+  # Controller-side Python libraries only (modules executed on the EE itself,
+  # e.g. delegate_to: localhost). Target-side libraries such as PyMySQL or
+  # psycopg2 belong on managed hosts, not here.
   python:
-    - ovh==1.2.0
+    - ovh==1.2.0            # kube_cloud.ovh (DNS records via delegate_to: localhost)
+    - hcloud==2.20.0        # hetzner.hcloud modules / inventory plugin
+    - cryptography==48.0.0  # community.crypto on controller side
+
+  # System packages needed by ansible-core / ansible-runner at runtime
+  system:
+    - git-core [platform:rpm]
+    - openssh-clients [platform:rpm]
+    - rsync [platform:rpm]
+    - tar [platform:rpm]
 
   galaxy:
     collections:
+      # Versions pinned to what ansible==14.0.0 ships locally
+      - name: ansible.posix
+        version: 2.2.0
+      - name: ansible.mysql
+        version: 5.0.1
+      - name: community.postgresql
+        version: 4.2.0
+      - name: community.general
+        version: 13.0.1
+      - name: community.crypto
+        version: 3.2.1
+      - name: community.zabbix
+        version: 4.2.0
+      - name: kubernetes.core
+        version: 6.4.0
+      - name: hetzner.hcloud
+        version: 6.9.0
       - name: kube_cloud.ovh
         version: 1.7.6
+      - name: awx.awx
+        version: 24.6.1
+
+additional_build_steps:
+  prepend_base:
+    # pip is not part of the minimal python3 package on CentOS Stream
+    - RUN $PKGMGR install -y python3-pip && $PKGMGR clean all
+  append_final:
+    # Fail the build early if a collection is missing or incompatible
+    - RUN ansible --version && ansible-galaxy collection list
