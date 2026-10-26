@@ -35,7 +35,7 @@ dependencies:
   python:
     - ovh==1.2.0            # kube_cloud.ovh (DNS records via delegate_to: localhost)
     - hcloud==2.20.0        # hetzner.hcloud modules / inventory plugin
-    - cryptography==48.0.0  # community.crypto on controller side
+    - cryptography==50.0.0  # community.crypto on controller side
 
   # System packages needed by ansible-core / ansible-runner at runtime
   system:
