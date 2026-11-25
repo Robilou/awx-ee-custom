@@ -2,7 +2,7 @@
 # Custom AWX Execution Environment for the APITEA/ansible repository.
 #
 # Goal: runtime parity with the local developer toolchain
-# (ansible repo: requirements.txt -> ansible-core 2.21.0 on Python 3.12),
+# (ansible repo: requirements.txt -> ansible-core 2.21.5 on Python 3.12),
 # and all collections baked into the image so AWX does not need to
 # download them from Galaxy on every project update.
 #
@@ -36,6 +36,8 @@ dependencies:
     - ovh==1.2.0            # kube_cloud.ovh (DNS records via delegate_to: localhost)
     - hcloud==2.27.0        # hetzner.hcloud modules / inventory plugin
     - cryptography==50.0.0  # community.crypto on controller side
+    # Transitive (ovh -> requests-oauthlib), pinned explicitly for CVE-2026-49272
+    - oauthlib==4.0.1
 
   # System packages needed by ansible-core / ansible-runner at runtime
   system:
